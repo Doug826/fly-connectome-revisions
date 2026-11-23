@@ -1,18 +1,16 @@
 # Do revisions to a fly's brain map change which feeding responses it predicts?
 
-A fruit fly extends its feeding tube (the proboscis) when certain neurons fire. Shiu and colleagues (2024) built a model of the whole fly brain from the FlyWire wiring map and used it to predict which groups of neurons can trigger that movement. They then tested those predictions in living flies.
+I reran a published fruit-fly brain model on its original wiring map, v630. For 16 of the 17 cell types I tested, it gave the same yes/no prediction as the paper. The remaining case, TH_VUM, came down to one spike in the published run and none in mine.
 
-The wiring map has since been corrected and re-released. This project asks whether those corrections change the model's predictions, and if so, whether the predictions get closer to what real flies do.
-
-**Status:** Part 1 (reproducing the published model on the original map, v630) is done. Part 2 (matching neurons across releases and rerunning on v783) is in progress.
+The next experiment compares those results with v783, a later release of the same brain reconstruction. I'll recover neurons whose identifiers changed between releases and repeat any changed predictions on both maps. The v630 reproduction is complete. The v783 simulations are planned.
 
 ## Result so far
 
-I reran the published model on FlyWire v630 for 17 cell types: the 14 that triggered feeding in real flies, the model's one false alarm (kitty), and two cases near zero (peacock and peahen). Each was stimulated at 50 Hz for 30 runs of 1 second, using the authors' code.
+Each cell type received 50 Hz input for 30 one-second trials. The panel includes all 14 cell types that triggered rostrum extension in the lab, plus kitty, peacock and peahen. Rostrum extension is movement of one part of the proboscis, the fly's feeding tube. In the tables, "fed" refers to observed rostrum extension.
 
-**My runs agreed with the paper on 16 of the 17 cell types.** The one disagreement was TH_VUM. In the paper it counted as a correct prediction because the motor neuron fired a single spike across all 30 runs. In my runs it fired none.
+I scored a predicted response when the left MN9 motor neuron, as labelled by the authors, fired at least once across the batch. Two published true positives had mean left MN9 rates below 1 Hz. Only TH_VUM changed its any-spike prediction in my v630 rerun.
 
-If "predicts feeding" means the motor neuron fires above 1 Hz rather than at all, my results and the paper's give the same 8 hits out of 14. Every disagreement sits below 1 Hz, where a few random spikes decide the outcome. So the model's main predictions reproduce reliably, but 2 of the paper's 10 hits (FMIn and TH_VUM) depend on a handful of random spikes.
+FMIn fired 18 spikes in 10 of my 30 trials. It remained positive under the any-spike rule in both datasets. With a threshold above 1 Hz, my run and the published run both detect 8 of the 14 observed responses. That threshold is a sensitivity check.
 
 | Cell type | Real flies (fraction that fed) | Paper, left MN9 (Hz) | My run, left MN9 (Hz) | Run-to-run SD (Hz) | My run, right MN9 (Hz) | Same prediction? |
 |---|---:|---:|---:|---:|---:|:---:|
@@ -34,62 +32,71 @@ If "predicts feeding" means the motor neuron fires above 1 Hz rather than at all
 | peacock | 0.0 | 0.00 | 0.00 | 0.00 | 0.03 | yes |
 | peahen | 0.0 | 0.00 | 0.00 | 0.00 | 0.13 | yes |
 
-"Run-to-run SD" is how much the firing rate varied between single runs. The uncertainty on each 30-run average is roughly that figure divided by 5.5. "Same prediction?" uses the paper's rule: the model predicts feeding if the left MN9 fires at all.
+The SD column describes variation between individual trials. Dividing it by the square root of 30, about 5.5, estimates the standard error of the batch mean under independent sampling. "Same prediction?" compares my binary call with the published call, using the unrounded spike counts.
 
-Other things worth noting:
+Diatom varied widely, with a mean near 30 Hz and an SD near 33 Hz. Left MN9 fired in all 30 trials, while right MN9 fired in 12. G2N_1 averaged 9.2 Hz against the paper's 12.4, and sink_sync averaged 26.7 against 22.2. Both kept the same binary prediction. The size and cause of those rate differences need further checking.
 
-- **diatom varies a lot between runs** (mean 30 Hz, SD 33 Hz). The left MN9 fired in all 30 runs, but at very different rates, and the right MN9 fired in only 12 of 30. I haven't looked into why yet.
-- **G2N_1 (9.2 vs 12.4 Hz) and sink_sync (26.7 vs 22.2 Hz)** differ from the paper by a bit more than random variation alone would suggest. Neither changes the prediction. It could be chance across 17 comparisons, or a difference in software versions. I've reported it rather than leaving it out.
-- **TH_VUM drives the right MN9 (2.6 Hz) but barely the left.** The miss depends on which side's neuron is used as the readout.
+TH_VUM's right MN9 response was 2.6 Hz. Its left-side miss therefore depends on which motor neuron is used for scoring.
 
 ## The published benchmark
 
-Shiu and colleagues compared the model with experiments on 106 cell types at 50 Hz stimulation ([Figure 2 and Supplementary Table 3](https://doi.org/10.1038/s41586-024-07763-9)):
+Shiu and colleagues tested 106 cell types by optogenetic stimulation and compared observed rostrum extension with simulated MN9 activity. At 50 Hz model input, they reported 101 correct predictions. [Figure 2 and Supplementary Table 3](https://doi.org/10.1038/s41586-024-07763-9)
 
 | Model prediction | Real flies fed | Real flies did not feed |
 |---|---:|---:|
 | Feeding | 10 | 1 |
 | No feeding | 4 | 91 |
 
-That's 101 of 106 correct. Only 14 of the 106 cell types made real flies feed, though, so a model that always predicted "no feeding" would already score 92 of 106. The more useful numbers are **10 of 14 real responses caught, with 1 false alarm**.
+Only 14 of the 106 cell types triggered the movement. An always-negative prediction would score 92 of 106, so I also report how many responses the model detected and how many false positives it produced. In the published screen, those counts were 10 of 14 responses and one false positive.
 
-I first rebuilt this table from the paper's spreadsheet and checked all 106 rows against the original file (`notebooks/01_fly_feeding_baseline.ipynb`).
+The first notebook rebuilds these counts from all 106 rows of the paper's spreadsheet (`notebooks/01_fly_feeding_baseline.ipynb`). My panel of 17 cell types matched observed movement on 11 of 17 cases. The published model matched 12 of those same 17.
 
 ## How the score depends on scoring choices
 
-The paper counts a predicted feeding response when the left MN9 motor neuron fires at all. Two things I checked:
+Using left MN9 above 0 Hz reproduces the published screen's counts, including the five extra false positives reported at 200 Hz. I use that as the primary rule. Taking activity on either side changes the published 50 Hz score from 101 to 99 because peacock and peahen each had one right MN9 spike across 30 trials, about 0.033 Hz.
 
-- **Counting either MN9 (left or right) lowers the score from 101 to 99.** Two extra cell types, peacock and peahen, become false alarms. Their right MN9 fired at 0.033 Hz in the paper's data, which is one spike across 30 runs. With an "any spike" threshold, one stray spike turns a correct "no" into a wrong "yes".
-- **Raising the threshold to 1 Hz** removes those noise-level cases. On the paper's own numbers, that gives 8 hits out of 14 instead of 10.
-
-For the comparison between map versions, I'll report the paper's rule (left MN9 above 0 Hz) as the main result, so it can be compared directly with the original. I'll also report the 1 Hz threshold and the either-side readout as checks. If a change between maps only shows up under one rule, I'll call it fragile.
+I'll also score each batch at a threshold above 1 Hz and using either MN9. The comparison will show which changes depend on the threshold or side chosen.
 
 ## Method
 
-- **Model:** the authors' leaky integrate-and-fire model and code ([philshiu/Drosophila_brain_model](https://github.com/philshiu/Drosophila_brain_model)), unchanged.
-- **Map:** FlyWire v630, the release used in the paper.
-- **Stimulation:** 50 Hz random (Poisson) input to every neuron in the cell type, using the authors' neuron lists from `sez_neurons.pickle`.
-- **Runs:** 30 runs of 1 second per cell type, the same as the paper.
-- **Readout:** left MN9 (FlyWire ID 720575940660219265), as labelled by the authors. FlyWire data is mirror-flipped compared with the real fly, so "left" here is the dataset's label, not necessarily the fly's left side.
-- **Compute:** free Google Colab. Each cell type took 6 to 9 minutes, except diatom (14 stimulated neurons), which took 17. The 17 took about 2 hours in total.
-- **Checks:** joblib logged "worker stopped" warnings during the runs, so I confirmed that every results file contains all 30 runs before using it. A separate script (`scripts/v630_batch_check.py`) reads the raw spike files directly, checks every trial is present and every spike time is within the trial, counts MN9 spikes run by run, and compares them with the spike counts from the paper. Its output (`results/v630_50Hz_MN9_summary.csv`) agrees with the table above.
+I used the authors' leaky integrate-and-fire model with the v630 data and neuron lists from `sez_neurons.pickle`. Each listed neuron received 50 Hz Poisson input, with 30 trials of 1 second per cell type. The primary readout was left MN9, FlyWire ID 720575940660219265. Side names follow the authors' dataset labels, whose orientation differs from the physical fly. [Model and code](https://github.com/philshiu/Drosophila_brain_model)
 
-## Next: comparing with the corrected map (v783)
+The batch took about two hours on free Google Colab. Most cell types took 6 to 9 minutes, while diatom, with 14 stimulated neurons, took about 17. Joblib printed worker-stopped warnings. I checked the saved output before analysing it.
 
-1. **Match neurons across releases.** FlyWire neuron IDs change when proofreading edits a neuron. Of the 106 cell types, 63 keep all their neuron IDs in v783, 38 keep some, and 5 keep none. The left MN9 kept its ID, but the right MN9 did not. Each cell type will be recorded as matched cleanly, partly matched, or excluded, with the reason.
-2. **Set the rule for a "real change" before looking at v783.** This is based on the run-to-run variation measured on v630.
-3. **Rerun the same 17 cell types on v783** with identical settings, then sort each into: stayed correct, stayed wrong, improved, or got worse.
+The independent checker, `scripts/v630_batch_check.py`, reads each raw spike file, checks trial coverage and spike times, and counts both MN9 outputs by trial. All 17 files contain records for all 30 trial IDs. Its summary, `results/v630_50Hz_MN9_summary.csv`, agrees with the rate table above.
+
+The upstream `run_exp` at commit `91bdd1e` has no seed argument and does not record seeds. These batches are unseeded. Fresh batches will use new simulation calls, with that limitation recorded in their metadata.
+
+## Comparing with v783
+
+The following protocol is fixed before my v783 simulations.
+
+1. Run roundup first to check the v783 pipeline, then FMIn. Both retain their original input IDs. Each gets 30 one-second trials at 50 Hz using `Completeness_783.csv` and `Connectivity_783.parquet`.
+2. Match the changed input neurons to the v783 snapshot. Across the full 106-cell inventory, 63 types retain every original ID, 38 retain some and five retain none. Record the evidence for each match, including splits, merges and exclusions. Stimulate the verified counterparts of the original input set. Left MN9 retains its ID. Right MN9 needs a verified replacement for the either-side check. An unresolved match is recorded as unavailable.
+3. Prioritise TH_VUM for recovery. Its only input ID changed, and the earlier v783 screen omitted it. Compare both MN9 outputs once their identities are verified. Use marge as a secondary check, comparing its surviving input alone with both recovered inputs on v783. Its v630 result was zero even with both neurons, so zero in both v783 conditions remains a possible result.
+4. Complete the remaining matched members of the 17-cell panel. Use my completed 30-trial v630 batch as the primary baseline and keep the published values as a reference.
+5. For every cell type whose primary call flips between releases, run one fresh 30-trial batch on each release. A flip is confirmed in a second batch only when the fresh v630 and v783 calls each reproduce their first-batch calls. Otherwise report it as unconfirmed. Keep each batch separate when applying the any-spike rule and stop after this scheduled confirmation pair.
+6. Report the four outcomes against the lab observations as stayed correct, stayed wrong, improved or worsened. Give the matched denominator and exclusions, and attach the confirmation status to every flip. Show mean rates, total spikes and trials containing a spike alongside the binary calls.
+
+A repeated flip provides evidence of repeatability under this protocol. Establishing statistical significance would require an additional analysis. Zero spikes in 30 trials also leaves uncertainty about rare responses. The rate differences and sensitivity checks will be reported with their observed variation.
 
 ## Limitations
 
-- Both map releases come from the same single fly, so this tests how sensitive the model is to corrections of that one map. It says nothing about how well the model would work on a different fly.
-- I've rerun 17 of the 106 cell types. The other 89 are cases where both the real flies and the model showed no response.
-- Only the 50 Hz stimulation setting is tested.
-- Neurotransmitter identities (which decide whether each connection excites or inhibits) are machine-learning predictions in the original model. I haven't changed them, so errors there aren't tested here.
+Both releases describe the same scanned fly. This comparison measures sensitivity to revisions of that reconstruction. Transfer to another animal remains an open question.
+
+The 17-cell panel was selected to include observed responses and known problem cases. The other 89 types were negative in both the original model and lab screen. A broader claim about new false positives would require testing those cases too.
+
+The simulation uses predicted neurotransmitter identities to assign connection signs. Replacing the released data can change more than a neuron's identifier. I'll record the exact input files and model settings, and describe any difference as a release effect until its cause has been checked. The planned comparison covers 50 Hz stimulation.
 
 ## Related work
 
-A November 2026 preprint by Asis ([arXiv:2611.09930](https://arxiv.org/abs/2611.09930)) studies odour learning in a whole-brain model based on Shiu et al.'s. As a validation step, it runs a modified version of the model on v783: connections with fewer than 5 synapses are dropped, and the sign of 44 antennal-lobe neurons is flipped. With those changes it reports reproducing 8 of 13 benchmark results from Shiu et al. Because the map and the model change together there, the effect of the map corrections alone can't be separated out. This project changes only the map version and keeps the model exactly as published, so any difference can be put down to the map corrections.
+Suifei's flywire-fly-lab reported a v783 feeding screen in commit 2dd2641 on 19 September 2026. It used three trials per condition and agreed with the published model on 100 of 101 tested cell types. FMIn was the disagreement, with 0 Hz against the paper's approximately 0.37 Hz. Its code retains only original input IDs still present in v783. It therefore excludes TH_VUM, Salivary_MN13, bamboo, gallinule and meteor, and stimulates reduced sets for partly changed types, including one marge neuron, three kitty neurons and 13 diatom neurons. [Experiment and code](https://github.com/suifei/flywire-fly-lab/commit/2dd26416f1894ac575430b16945cd4fe1973a6a9) · [Results](https://github.com/suifei/flywire-fly-lab/blob/main/results/screen/sufficiency/summary.json)
+
+In my v630 batch, FMIn fired in 10 of 30 trials. Of the possible selections of three distinct trials, about 28% contain no spikes. That calculation illustrates how a short batch can miss this response. A 30-trial v783 batch will give a more informative comparison, while uncertainty about a release effect remains.
+
+This project adds recovery of changed neuron IDs, 30 trials per condition, and a confirmation rule committed before my v783 results. It compares the same intended biological inputs across releases and checks whether a changed call recurs in a fresh batch.
+
+A November 2026 preprint by Asis studies odour learning in a whole-brain model based on Shiu et al.'s. Its v783 validation drops connections with fewer than five synapses and flips the signs of 44 antennal-lobe neurons, reporting reproduction of 8 of 13 benchmark results. Those model changes need to be considered when comparing its results with the original. [Preprint](https://arxiv.org/abs/2611.09930)
 
 ## Repository contents
 
@@ -107,23 +114,23 @@ results/
   raw_v630/                            raw spike output, one .parquet file per cell type (about 9 MB in total)
 ```
 
-The raw spike files mean the comparison and the check script can be rerun without repeating the 2-hour simulation: point `config['path_res']` at `results/raw_v630`.
+The raw files support analysis without repeating the simulation. Point `config['path_res']` at `results/raw_v630` to run the checker on the saved output.
 
 ## Reproducing the results
 
 1. Open `notebooks/02_v630_reproduction.ipynb` in Google Colab.
-2. Run the setup cells (install, load the model, load `sez_neurons.pickle`).
-3. Mount Google Drive and set `config['path_res']` to a Drive folder so results survive a disconnect.
-4. Run the batch cell. Finished cell types are skipped automatically, so it can be restarted.
-5. Run the comparison cell to produce `v630_reproduction_17.csv`.
-6. Upload `scripts/v630_batch_check.py` to the Colab session and run `check_batch(config, params)` to produce `v630_50Hz_MN9_summary.csv`.
+2. Run the setup cells to install dependencies and load the model and `sez_neurons.pickle`.
+3. Mount Google Drive and set `config['path_res']` to a Drive folder.
+4. Run the batch cell. The runner skips existing experiment files. After an interruption, check those files before resuming.
+5. Run the comparison cell to write `v630_reproduction_17.csv`.
+6. Upload `scripts/v630_batch_check.py` to Colab and call `check_batch(config, params)` to write `v630_50Hz_MN9_summary.csv`.
 
-Software versions: Python 3.13.18 (Google Colab), Brian2 2.11.0, authors' code at commit `91bdd1e`.
+The completed run used Python 3.13.18 in Colab, Brian2 2.11.0 and the authors' code at commit `91bdd1e`. Save each release and repeat batch in its own folder so an existing filename cannot cause a confirmation run to be skipped. Drive retains finished files, but a disconnect can lose the experiment currently running.
 
 ## Credits
 
-- **Brain map:** the FlyWire Consortium, Dorkenwald et al. (2024), *Nature*. [doi:10.1038/s41586-024-07558-y](https://doi.org/10.1038/s41586-024-07558-y)
-- **Model, code and experimental data:** Shiu et al. (2024), *A Drosophila computational brain model reveals sensorimotor processing*, *Nature*. [doi:10.1038/s41586-024-07763-9](https://doi.org/10.1038/s41586-024-07763-9). Supplementary data used under CC BY 4.0.
-- **My contribution:** reproducing the benchmark, checking how it depends on scoring choices, and comparing predictions across map releases.
+The FlyWire Consortium reconstructed the brain. [Dorkenwald et al., Nature (2024)](https://doi.org/10.1038/s41586-024-07558-y)
 
-I used an AI assistant to help plan the project and write code. I ran every simulation myself and checked the results against the published data.
+Shiu and colleagues developed the model and collected the experimental comparison data. The supplementary data used here are licensed under CC BY 4.0. [A Drosophila computational brain model reveals sensorimotor processing, Nature (2024)](https://doi.org/10.1038/s41586-024-07763-9)
+
+I reproduced the v630 benchmark and checked how its score depends on the readout. Matching and comparing releases is the next stage. I used AI assistance for planning, code and writing, including the Avoid AI Writing plugin for this README. I ran the completed simulations in Colab and checked the results against the published data.
