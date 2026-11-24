@@ -1,0 +1,7 @@
+role,old_id,new_id,confidence,method,cell_type_v630,cell_type_v783,flywire_side_label_v783,out_synapses_v630,out_synapses_v783,out_sign_same,annotation_release,status
+TH_VUM input,720575940616857174,720575940610482883,0.9979185938945421,"fafbseg.flywire.update_ids(timestamp='mat_783'), public dataset",CB3958,CB3958,center,1911,2001,True,flyconnectome/flywire_annotations a83b277 (2026-09-29),matched
+right MN9 readout,720575940645521262,720575940618238523,0.9996732026143791,"fafbseg.flywire.update_ids(timestamp='mat_783'), public dataset",CB0701,CB0701,left,116,117,True,flyconnectome/flywire_annotations a83b277 (2026-09-29),matched
+diatom input,720575940614897458,720575940633968045,0.9912663755458515,"fafbseg.flywire.update_ids(timestamp='mat_783'), public dataset",CB4148,CB4148,,266,266,True,flyconnectome/flywire_annotations a83b277 (2026-09-29),matched
+kitty input,720575940610056772,720575940626798736,0.9594298245614035,"fafbseg.flywire.update_ids(timestamp='mat_783'), public dataset",CB0370,CB0370,,1621,1659,True,flyconnectome/flywire_annotations a83b277 (2026-09-29),matched
+marge input,720575940610690372,720575940633941293,0.9991846718304117,"fafbseg.flywire.update_ids(timestamp='mat_783'), public dataset",CB0812,CB0812,,1965,1962,True,flyconnectome/flywire_annotations a83b277 (2026-09-29),matched
+peacock input,720575940631237203,720575940627081534,0.9912917271407837,"fafbseg.flywire.update_ids(timestamp='mat_783'), public dataset",CB0746,CB0746,,845,871,True,flyconnectome/flywire_annotations a83b277 (2026-09-29),matched

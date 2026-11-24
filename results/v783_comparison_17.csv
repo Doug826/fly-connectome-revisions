@@ -1,0 +1,19 @@
+cell_type,lab_fed,v630_left_spikes,v630_left_trials,v783_left_spikes,v783_left_trials,v630_right_spikes,v783_right_spikes,v630_call,v783_call,flip,outcome,v630_call_over_1hz,v783_call_over_1hz,v630_call_either,v783_call_either
+roundup,True,2363,30,2314,30,2468,2391,True,True,False,stayed correct,True,True,True,True
+diatom,True,914,30,874,30,922,923,True,True,False,stayed correct,True,True,True,True
+sink_sync,True,800,30,743,30,828,766,True,True,False,stayed correct,True,True,True,True
+G2N_1,True,275,30,351,30,292,383,True,True,False,stayed correct,True,True,True,True
+clavicle,True,300,30,314,30,202,201,True,True,False,stayed correct,True,True,True,True
+Fdg,True,687,30,703,30,628,618,True,True,False,stayed correct,True,True,True,True
+bract,True,978,30,1067,30,727,770,True,True,False,stayed correct,True,True,True,True
+rattle,True,77,27,111,30,41,48,True,True,False,stayed correct,True,True,True,True
+FMIn,True,18,10,8,8,5,4,True,True,False,stayed correct,False,False,True,True
+TH_VUM,True,0,0,0,0,78,101,False,False,False,stayed wrong,False,False,True,True
+marge,True,0,0,0,0,0,0,False,False,False,stayed wrong,False,False,False,False
+phantom,True,0,0,0,0,0,0,False,False,False,stayed wrong,False,False,False,False
+tentacular,True,0,0,0,0,0,0,False,False,False,stayed wrong,False,False,False,False
+usnea,True,0,0,0,0,0,0,False,False,False,stayed wrong,False,False,False,False
+kitty,False,208,30,209,30,330,337,True,True,False,stayed wrong,True,True,True,True
+peacock,False,0,0,0,0,1,2,False,False,False,stayed correct,False,False,True,True
+peahen,False,0,0,0,0,4,0,False,False,False,stayed correct,False,False,True,False
+marge_survivor_only,True,0,0,0,0,0,0,False,False,False,stayed wrong,False,False,False,False
